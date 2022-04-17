@@ -3,7 +3,12 @@ from extra.utils import (
   _print,
 )
 import json
-from datasets import CustomDataset
+import importlib
+from datasets import (
+  ISIC2020Dataset
+)
+
+from models.unet import BasicUnet
 
 
 import numpy as np
@@ -30,39 +35,63 @@ from PIL import Image
 import glob
 
 
+
+# Ignore warnings
+import warnings
+warnings.filterwarnings("ignore")
+
+
+
+# ------ load a config file ------
 config = load_config("./configs/default.yaml")
-_print("Config:", "info_bold")
+_print("Config:", "info_underline")
 print(json.dumps(config, indent=2))
 print(20*"~-", "\n")
 
 
-custom_img = CustomDataset("")
+train_batch_size = config['Train']['BatchSize']
+test_batch_size  = config['Test']['BatchSize']
+
+
+# ------ load a config file ------
+CustomDataset = globals()[config['Dataset']['ClassName']]
+dataset       = CustomDataset(root_directory=config['Dataset']['RootDirectory'])
+
+
 # total images in set
-print(custom_img.len)
+print(dataset.len)
 
-train_len = int(0.6*custom_img.len)
-test_len = custom_img.len - train_len
-train_set, test_set = CustomDataset.random_split(custom_img, lengths=[train_len, test_len])
+train_len = int(0.6 * dataset.len)
+val_len   = dataset.len - train_len
+train_set, val_set = CustomDataset.random_split(
+                      dataset, 
+                      lengths=[train_len, val_len]
+                    )
+
 # check lens of subset
-len(train_set), len(test_set)
+len(train_set), len(val_set)
 
-train_set = CustomDataset("")
-train_set = torch.utils.data.TensorDataset(train_set, train=True, batch_size=4)
-train_loader = torch.utils.data.DataLoader(train_set, batch_size=4, shuffle=True, num_workers=1)
-print(train_set)
-print(train_loader)
+train_set    = CustomDataset("")
+train_set    = torch.utils.data.TensorDataset(
+                train_set, 
+                train=True, 
+                batch_size=train_batch_size
+              )
 
-test_set = torch.utils.data.DataLoader(Dataset, batch_size=4, sampler=test_set)
-test_loader = torch.utils.data.DataLoader(Dataset, batch_size=4)
+train_loader = torch.utils.data.DataLoader(
+                train_set, 
+                batch_size=train_batch_size, 
+                shuffle=True, 
+                num_workers=1
+              )
 
-print(config)
-
-
+val_set      = torch.utils.data.DataLoader(Dataset, batch_size=4, sampler=val_set)
+val_loader   = torch.utils.data.DataLoader(Dataset, batch_size=4)
 
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = models.resnet50(pretrained=True)
+model  = models.resnet50(pretrained=True)
 for param in model.parameters():
     param.requires_grad = False
     
@@ -78,4 +107,5 @@ optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
 model.to(device)
 if int(pretrained=True):
-    model.load_state_dict(torch.load(saved_model_path, map_location='cpu')['model_weights'])
+    model.load_state_dict(torch.load(
+      config['Model']['SavePath'], map_location='cpu')['model_weights'])

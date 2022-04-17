@@ -16,7 +16,7 @@ def _print(string, p=None):
   if not p:
     print(string)
     return
-  pre = ""
+  pre = f"{bcolors.ENDC}"
   
   if "bold" in p.lower():
     pre += bcolors.BOLD

@@ -1,2 +1,22 @@
+RunMode: 'Test'
+
+
 DataDirectory: "sample"
 
+Dataset:
+  ClassName: "ISIC2020Dataset"
+  RootDirectory: "../data/isic2020"
+
+Train: 
+  BatchSize: 4
+  Shuffle: true
+  worker: 1
+
+Test:
+  BatchSize: 4
+  Shuffle: true
+  worker: 1
+
+Model: 
+  SavePath: './'
+Preprocess: true
