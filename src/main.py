@@ -89,17 +89,18 @@ val_set      = torch.utils.data.DataLoader(Dataset, batch_size=4, sampler=val_se
 val_loader   = torch.utils.data.DataLoader(Dataset, batch_size=4)
 
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model  = models.resnet50(pretrained=True)
 for param in model.parameters():
-    param.requires_grad = False
-    
-model.fc = nn.Sequential(nn.Linear(2048, 512),
-                                 nn.ReLU(),
-                                 nn.Dropout(0.2),
-                                 nn.Linear(512, 10),
-                                 nn.LogSoftmax(dim=1))
+  param.requires_grad = False
+
+model.fc = nn.Sequential(
+                          nn.Linear(2048, 512),
+                          nn.ReLU(),
+                          nn.Dropout(0.2),
+                          nn.Linear(512, 10),
+                          nn.LogSoftmax(dim=1)
+                        )
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
 # optimizer = optim.RMSprop(Net.parameters(), lr= float(config['lr']), weight_decay=1e-8, momentum=0.9)
@@ -107,5 +108,9 @@ optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
 model.to(device)
 if int(pretrained=True):
-    model.load_state_dict(torch.load(
-      config['Model']['SavePath'], map_location='cpu')['model_weights'])
+  model.load_state_dict(
+    torch.load(
+      config['Model']['SavePath'], 
+      map_location='cpu'
+    )['model_weights']
+  )

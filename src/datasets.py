@@ -7,19 +7,22 @@ import glob
 
 
 
-class ISIC2020Dataset(Dataset):
-    def __init__(self, root_directory, *args, **kwargs):
-        super(ISIC2020Dataset, self)
-        folder_names    = glob.glob(f"{root_directory}")
-        file_names      = ['-'.join(fn.split('-')[1:]) for fn in folder_names]
+class ISIC2018Dataset(Dataset):
+    def __init__(self, subjects, output_size, *args, **kwargs):
+        super(ISIC2018Dataset, self)
         
-        self.file_names = file_names
-        self.X_path     = root_directory
-        self.Y_path     = root_directory
+        subject_names       = ['-'.join(fn.split('-')[1:]) for fn in subjects]
+        subjects_x          = subjects
+        subjects_y          = subjects
+        
+        self.X_path_list    = subjects_x
+        self.Y_path_list    = subjects_y
+        
+        self.output_size    = output_size
 
     def __getitem__(self, index):
-        x = Image.open(self.X_path[index])
-        y = Image.open(self.Y_path[index])
+        x = Image.open(self.X_path_list[index])
+        y = Image.open(self.Y_path_list[index])
         filename = self.file_names[index]
         
         x = torch.tensor(x).permute(2,0,1)
@@ -28,6 +31,7 @@ class ISIC2020Dataset(Dataset):
         else: 
             y = torch.tensor(y).permute(2,0,1)
         
+        # x and y must resize to the self.output_size
         return {
             'x': x,
             'y': y,

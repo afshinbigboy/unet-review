@@ -1,22 +1,36 @@
-RunMode: 'Test'
+run:
+  mode: 'Test'
 
+dataset:
+  class_name: "ISIC2020Dataset"
+  root_directory: "../data/isic2020"
 
-DataDirectory: "sample"
+  number_classes: 2
 
-Dataset:
-  ClassName: "ISIC2020Dataset"
-  RootDirectory: "../data/isic2020"
+  train: 
+    batch_size: 4
+    shuffle: true
+    worker: 1
+  
+  validation: 
+    batch_size: 4
+    shuffle: true
+    worker: 1
 
-Train: 
-  BatchSize: 4
-  Shuffle: true
-  worker: 1
+  test:
+    batch_size: 4
+    shuffle: true
+    worker: 1
 
-Test:
-  BatchSize: 4
-  Shuffle: true
-  worker: 1
+training:
+  lr: 0.002
+  patience: 5
+  epochs: 50
+  progress_p: 
 
-Model: 
-  SavePath: './'
-Preprocess: true
+model:
+  pretrained: false
+  save_path: './saved_models/s'
+
+# preprocess:
+
