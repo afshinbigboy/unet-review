@@ -1,9 +1,13 @@
 run:
   mode: 'Test'
 
+transforms:
+  - 
+
 dataset:
   class_name: "ISIC2020Dataset"
-  root_directory: "../data/isic2020"
+  params:
+    - root_directory: "../data/isic2020"
 
   number_classes: 2
 

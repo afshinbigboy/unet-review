@@ -5,7 +5,7 @@ from extra.utils import (
 import json
 import importlib
 from datasets import (
-  ISIC2020Dataset
+  ISIC2018Dataset
 )
 
 from models.unet import BasicUnet
@@ -41,21 +41,18 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-
-# ------ load a config file ------
+# ------ load the config file ------
 config = load_config("./configs/default.yaml")
 _print("Config:", "info_underline")
 print(json.dumps(config, indent=2))
 print(20*"~-", "\n")
 
-
-train_batch_size = config['Train']['BatchSize']
-test_batch_size  = config['Test']['BatchSize']
-
+train_batch_size = config['training']['batch_size']
+test_batch_size = config['testing']['batch_size']
 
 # ------ load a config file ------
-CustomDataset = globals()[config['Dataset']['ClassName']]
-dataset       = CustomDataset(root_directory=config['Dataset']['RootDirectory'])
+Dataset = globals()[config['dataset']['class_name']]
+dataset = Dataset(**config['dataset']['params'])
 
 
 # total images in set
@@ -63,7 +60,7 @@ print(dataset.len)
 
 train_len = int(0.6 * dataset.len)
 val_len   = dataset.len - train_len
-train_set, val_set = CustomDataset.random_split(
+train_set, val_set = Dataset.random_split(
                       dataset, 
                       lengths=[train_len, val_len]
                     )
