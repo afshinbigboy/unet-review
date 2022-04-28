@@ -1,30 +1,58 @@
 run:
   mode: 'Test'
+  device: 'gpu'
 
-transforms:
-  - 
+
+transforms: none
 
 dataset:
   class_name: "ISIC2020Dataset"
-  params:
-    - root_directory: "../data/isic2020"
+  training:
+    params:
+      root_dir: "/content/ISIC2018"
+      x_folder: "ISIC2018_Task1-2_Training_Input"
+      y_folder: "ISIC2018_Task1_Training_GroundTruth"
+      x_filename_format: "ISIC_*.jpg"
+      y_filename_format: "ISIC_*_segmentation.png"
+      transform_list:
+        - Rescale(256)
+      
+  validation:
+    params:
+      root_dir: "/content/ISIC2018"
+      x_folder: "ISIC2018_Task1-2_Validation_Input"
+      y_folder: "ISIC2018_Task1_Validation_GroundTruth"
+      x_filename_format: "ISIC_*.jpg"
+      y_filename_format: "ISIC_*_segmentation.png"
+      transform_list:
+        - Rescale(256)
+      
+  test:
+    params:
+      root_dir: "/content/ISIC2018"
+      x_folder: "ISIC2018_Task1-2_Test_Input"
+      x_filename_format: "ISIC_*.jpg"
+      transform_list:
+        - Rescale(256)
+      
 
   number_classes: 2
 
+data_loader:
   train: 
-    batch_size: 4
+    batch_size: 1
     shuffle: true
-    worker: 1
+    # num_workers: 1
   
   validation: 
-    batch_size: 4
-    shuffle: true
-    worker: 1
+    batch_size: 1
+    shuffle: false
+    # num_workers: 1
 
   test:
-    batch_size: 4
-    shuffle: true
-    worker: 1
+    batch_size: 1
+    shuffle: false
+    # num_workers: 1
 
 training:
   lr: 0.002
@@ -33,8 +61,10 @@ training:
   progress_p: 
 
 model:
-  pretrained: false
   save_path: './saved_models/s'
+  name: 'UNET'
+  params:
+    in_channels: 4
+    out_channels: 2
 
 # preprocess:
-
