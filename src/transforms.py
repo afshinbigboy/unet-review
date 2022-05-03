@@ -1,12 +1,13 @@
 
 import torch
-from torch.utils.data import transform
+# from torch.utils.data import transform
+from torchvision.transforms.functional import resize
 import numpy as np
 
 
 
-class Rescale(object):
-    """Rescale the image in a sample to a given size.
+class Resize(object):
+    """Resize the image in a sample to a given size.
     Args:
         output_size (tuple or int): Desired output size. If tuple, output is
             matched to output_size. If int, smaller of image edges is matched
@@ -17,9 +18,9 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        x, y = sample['x'], sample['y']
+        img, msk = sample['img'], sample['msk']
 
-        h, w = x.shape[:2]
+        h, w = img.shape[:2]
         if isinstance(self.output_size, int):
             if h > w:
                 new_h, new_w = self.output_size * h / w, self.output_size
@@ -30,11 +31,23 @@ class Rescale(object):
 
         new_h, new_w = int(new_h), int(new_w)
 
-        img = transform.resize(x, (new_h, new_w))
-        msk = transform.resize(x, (new_h, new_w))
+        img = resize(img, (new_h, new_w))
+        msk = resize(msk, (new_h, new_w))
+        
+        return {'img': img, 'msk': msk}
 
-        return {'x': img, 'y': msk}
-    
+
+class Normalize(object):
+    def __init__(self):
+        pass
+    def __call__(self, sample):
+        img, msk = sample['img'], sample['msk']
+        
+        img = (img - img.min()) / (img.max() - img.min())
+        msk = (msk - msk.min()) / (msk.max() - msk.min())
+
+        return {'img': img, 'msk': msk}
+
 
 class RandomCrop(object):
     """Crop randomly the image in a sample.
