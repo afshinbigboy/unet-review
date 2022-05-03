@@ -12,6 +12,10 @@ from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from matplotlib.image import imread
+from transforms import (
+    Resize,
+    Normalize,
+)
 
 
 # Ignore warnings
@@ -27,10 +31,10 @@ class ISIC2018Dataset(Dataset):
 	def __init__(
 		self, 
 		root_dir, 
-		x_folder,
-		x_filename_format,
-		y_folder=None,
-		y_filename_format=None,
+		img_folder,
+		img_filename_format,
+		msk_folder=None,
+		msk_filename_format=None,
 		transform_list=[], 
 		*args, **kwargs):
 		"""Args:
@@ -40,13 +44,13 @@ class ISIC2018Dataset(Dataset):
 				on a sample.
 		"""
 		self.root_dir = root_dir if not '/' == root_dir[-1] else os.path.dirname(root_dir)
-		self.x_fp_list = glob.glob(f"{os.path.join(self.root_dir, x_folder)}/{x_filename_format}")
-		self.fid_list = [fn.split('/')[-1].split('.')[0].split('_')[1] for fn in self.x_fp_list]
+		self.img_fp_list = glob.glob(f"{os.path.join(self.root_dir, img_folder)}/{img_filename_format}")
+		self.fid_list = [fn.split('/')[-1].split('.')[0].split('_')[1] for fn in self.img_fp_list]
 		
-		self.x_folder = x_folder
-		self.x_filename_format = x_filename_format
-		self.y_folder = y_folder
-		self.y_filename_format = y_filename_format
+		self.img_folder = img_folder
+		self.img_filename_format = img_filename_format
+		self.msk_folder = msk_folder
+		self.msk_filename_format = msk_filename_format
 
 		if transform_list:
 			self.transform = transforms.Compose([eval(t) for t in transform_list])
@@ -58,23 +62,23 @@ class ISIC2018Dataset(Dataset):
 		return len(self.fid_list)
 
 
-	def __getitem__(self, index):
-		file_id = self.fid_list[index]
+	def __getitem__(self, indeimg):
+		file_id = self.fid_list[indeimg]
 
-		x_filepath = f"{os.path.join(self.root_dir, self.x_folder)}/{self.x_filename_format.replace('*', file_id)}"
-		x = imread(x_filepath)
-		x = torch.tensor(x).permute(2,0,1)
+		img_filepath = f"{os.path.join(self.root_dir, self.img_folder)}/{self.img_filename_format.replace('*', file_id)}"
+		img = imread(img_filepath)
+		img = torch.tensor(img).permute(2,0,1)
 		
-		if self.y_folder:
-			y_filepath = f"{os.path.join(self.root_dir, self.y_folder)}/{self.y_filename_format.replace('*', file_id)}"
-			y = imread(y_filepath)
-			if len(y.shape) < 3: 
-				y = torch.tensor(y).unsqueeze(-1).permute(2,0,1)
+		if self.msk_folder:
+			msk_filepath = f"{os.path.join(self.root_dir, self.msk_folder)}/{self.msk_filename_format.replace('*', file_id)}"
+			msk = imread(msk_filepath)
+			if len(msk.shape) < 3: 
+				msk = torch.tensor(msk).unsqueeze(-1).permute(2,0,1)
 			else: 
-				y = torch.tensor(y).permute(2,0,1)
-			sample = {'x': x, 'y': y}
+				msk = torch.tensor(msk).permute(2,0,1)
+			sample = {'img': img, 'msk': msk}
 		else:
-			sample = {'x': x}
+			sample = {'img': img}
 
 		if self.transform:
 			sample = self.transform(sample)
