@@ -2,6 +2,7 @@
 import torch
 # from torch.utils.data import transform
 from torchvision.transforms.functional import resize
+from torchvision.transforms import InterpolationMode
 import numpy as np
 
 
@@ -32,7 +33,7 @@ class Resize(object):
         new_h, new_w = int(new_h), int(new_w)
 
         img = resize(img, (new_h, new_w))
-        msk = resize(msk, (new_h, new_w))
+        msk = resize(msk, (new_h, new_w), interpolation=InterpolationMode.NEAREST)
         
         return {'img': img, 'msk': msk}
 

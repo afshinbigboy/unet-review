@@ -12,6 +12,6 @@ class DiceLoss(torch.nn.Module):
         mask = mask.flatten()
         
         intersect = (mask * pred).sum()
-        dice = 2*intersect / (pred.sum() + mask.sum() + EPSILON)
-        return 1 - dice
-        
+        dice_score = 2*intersect / (pred.sum() + mask.sum() + EPSILON)
+        dice_loss = 1 - dice_score
+        return dice_loss
