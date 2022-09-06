@@ -1,76 +1,49 @@
 run:
-  mode: 'Test'
+  mode: 'train'
   device: 'gpu'
-
-
 transforms: none
-
 dataset:
-  class_name: "ISIC2018Dataset"
+  class_name: "ISIC2018TrainingDataset"
+  input_size: 256
   training:
     params:
-      root_dir: "/Users/afshin/Research/academic/my_papers/unet_review/datasets/ISIC2018"
-      img_folder: "ISIC2018_Task1-2_Training_Input"
-      msk_folder: "ISIC2018_Task1_Training_GroundTruth"
-      img_filename_format: "ISIC_*.jpg"
-      msk_filename_format: "ISIC_*_segmentation.png"
-      transform_list:
-        - Resize((256, 256))
-        - Normalize()
-      
+      data_dir: "/home/staff/azad/deeplearning/datasets/ISIC2018"
   validation:
     params:
-      root_dir: "/Users/afshin/Research/academic/my_papers/unet_review/datasets/ISIC2018"
-      img_folder: "ISIC2018_Task1-2_Validation_Input"
-      msk_folder: "ISIC2018_Task1_Validation_GroundTruth"
-      img_filename_format: "ISIC_*.jpg"
-      msk_filename_format: "ISIC_*_segmentation.png"
-      transform_list:
-        - Resize((256, 256))
-        - Normalize()
-
-  test:
-    params:
-      root_dir: "/content/ISIC2018"
-      img_folder: "ISIC2018_Task1-2_Test_Input"
-      img_filename_format: "ISIC_*.jpg"
-      transform_list:
-        - Resize((256, 256))
-        - Normalize()
-      
+      data_dir: "/home/staff/azad/deeplearning/datasets/ISIC2018"
   number_classes: 2
-
 data_loader:
   train: 
-    batch_size: 4
+    batch_size: 16
     shuffle: true
-    # num_workers: 1
-  
+    num_workers: 4
+    pin_memory: true
   validation: 
-    batch_size: 4
+    batch_size: 16
     shuffle: false
-    # num_workers: 1
-
+    num_workers: 4
+    pin_memory: true
   test:
-    batch_size: 4
+    batch_size: 16
     shuffle: false
-    # num_workers: 1
-
+    num_workers: 4
+    pin_memory: false
 training:
   optimizer:
     name: 'Adam'
     params:
       lr: 0.0001
+  criterion:
+    name: "DiceLoss"
+    params: {}
   patience: 5
   epochs: 50
-  progress_p: 
-
 model:
-  save_path: './saved_models/s'
+  save_dir: '../saved_models/isic2018_unet'
+  load_weights: false
   name: 'Unet'
-  params: 
+  params:
     in_channels: 3
     out_channels: 1
-    
-
+    with_bn: false
 # preprocess:
