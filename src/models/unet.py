@@ -4,34 +4,42 @@ from torch import nn
 
 
 class DoubleConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, with_bn=False):
         super().__init__()
-        self.step = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-        )
+        if with_bn:
+            self.step = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_channels),
+                nn.ReLU(),
+                nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_channels),
+                nn.ReLU(),
+            )
+        else:
+            self.step = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+                nn.ReLU(),
+            )
         
     def forward(self, x):
         return self.step(x)
 
 
 class Unet(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, with_bn=False):
         super().__init__()
         init_channels = 32
 
-        self.en_1 = DoubleConv(in_channels, init_channels)
-        self.en_2 = DoubleConv(1*init_channels, 2*init_channels)
-        self.en_3 = DoubleConv(2*init_channels, 4*init_channels)
-        self.en_4 = DoubleConv(4*init_channels, 8*init_channels)
+        self.en_1 = DoubleConv(in_channels    , init_channels  , with_bn)
+        self.en_2 = DoubleConv(1*init_channels, 2*init_channels, with_bn)
+        self.en_3 = DoubleConv(2*init_channels, 4*init_channels, with_bn)
+        self.en_4 = DoubleConv(4*init_channels, 8*init_channels, with_bn)
         
-        self.de_1 = DoubleConv((4 + 8)*init_channels, 4*init_channels)
-        self.de_2 = DoubleConv((2 + 4)*init_channels, 2*init_channels)
-        self.de_3 = DoubleConv((1 + 2)*init_channels, 1*init_channels)
+        self.de_1 = DoubleConv((4 + 8)*init_channels, 4*init_channels, with_bn)
+        self.de_2 = DoubleConv((2 + 4)*init_channels, 2*init_channels, with_bn)
+        self.de_3 = DoubleConv((1 + 2)*init_channels, 1*init_channels, with_bn)
         self.de_4 = nn.Conv2d(init_channels, out_channels, 1)
         
         self.maxpool = nn.MaxPool2d(kernel_size=2)
